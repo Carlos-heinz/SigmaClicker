@@ -1,6 +1,4 @@
-import time
 import tkinter as tk
-from tkinter import Entry
 from tkinter import StringVar
 from tkinter import PhotoImage
 from tkinter import messagebox
@@ -14,6 +12,7 @@ root.resizable(False,False)
 
 #zdjecia
 IkonaSklep = PhotoImage(file=r"assets\shopicon.png")
+IkonaZapisIWczytaj = PhotoImage(file=r"assets\save&load.png")
 #zmienne
 click = 0
 ItemkiSklep = ["Multiplier","Autoclicker"]
@@ -40,17 +39,56 @@ ile_razy_kupiono_autoclicker_wyswietl.set("Jeszcze nic nie kupiono!")
 ile_na_sekunde_autoclicker = StringVar()
 ile_na_sekunde_autoclicker.set(f"Klikniec na sekunde: {ile_razy_kupiono_autoclicker*4}")
 #funckje
+def zapisz_stan(nazwaokna):
+    plik_zapisu = open("saves\\save.txt","w")
+    plik_zapisu.write(f"{click}\n{ile_razy_kupiono_mult}\n{ile_razy_kupiono_autoclicker}\n{cenaMult}\n{cenaAuto}")
+    label_zapisano = tk.Label(
+        nazwaokna,
+        text="Zapisano!",
+        font=("gothic", 20)
+    )
+    label_zapisano.place(x=150, y=200)
+    root.after(2000,label_zapisano.destroy)
+    plik_zapisu.close()
+def wczytaj_stan(nazwaokna):
+    global click
+    global ile_razy_kupiono_mult
+    global ile_razy_kupiono_autoclicker
+    global cenaMult
+    global cenaAuto
+    plik_zapisu = open("saves\save.txt","r")
+    dane = plik_zapisu.readlines()
+    click = float(dane[0])
+    ile_razy_kupiono_mult = int(dane[1])
+    ile_razy_kupiono_autoclicker = int(dane[2])
+    cenaMult = float(dane[3])
+    cenaAuto = float(dane[4])
+    plik_zapisu.close()
+    wyswietl.set(f"{click:.0f}")
+    ile_razy_kupiono_mult_wyswietl.set("Kupiono: "+str(ile_razy_kupiono_mult))
+    ile_razy_kupiono_autoclicker_wyswietl.set("Kupiono: "+str(ile_razy_kupiono_autoclicker))
+    cenaMult_wyswietl.set(f"Koszt: {cenaMult:.0f} klikniec")
+    cenaAuto_wyswietl.set(f"Koszt: {cenaAuto:.0f} klikniec")
+    ile_na_sekunde_autoclicker.set(f"Klikniec na sekunde: {ile_razy_kupiono_autoclicker*4}")
+    label_wczytano = tk.Label(
+        nazwaokna,
+        text="Wczytano!",
+        font=("gothic", 20)
+    )
+    label_wczytano.place(x=150, y=200)
+    root.after(2000,label_wczytano.destroy)
+    if ile_razy_kupiono_autoclicker > 0:
+        liczbaKlikniecSekunda.place(x=395, y=220, anchor = tk.CENTER)
+        auto_clicker()
+
+
 def auto_clicker():
     global click
     global ile_razy_kupiono_autoclicker
     if ile_razy_kupiono_autoclicker > 0:
         click += ile_razy_kupiono_autoclicker
         wyswietl.set(f"{click:.0f}")
-    root.after(250, auto_clicker)
-
-while ile_razy_kupiono_autoclicker < 0:
-        print("yay")
-        auto_clicker()        
+    root.after(250, auto_clicker)   
 
 def akcja_guzik():
     global click
@@ -161,7 +199,46 @@ def guzik_sklep():
     oknosklep.title("Sigma Clicker - Sklep")
     oknosklep.iconbitmap(r"assets\icon.ico")
     sklep_interface(oknosklep)
-
+#interfejs zapisu i wczytywania
+def zapis_i_wczytaj_interface(nazwaokna):
+    zapisztext = tk.Label(
+        nazwaokna,
+        text = "Zapisz stan gry",
+        font = ("gothic", 30)
+    )
+    wczytajtext = tk.Label(
+        nazwaokna,
+        text = "Wczytaj stan gry",
+        font = ("gothic", 30)
+    )
+    guzik_zapisz = tk.Button(
+        nazwaokna,
+        text = "Zapisz",
+        width = 22,
+        height = 3,
+        relief = "ridge",
+        command=lambda: zapisz_stan(nazwaokna)
+    )
+    guzik_wczytaj = tk.Button(
+        nazwaokna,
+        text = "Wczytaj",
+        width = 22,
+        height = 3,
+        relief = "ridge",
+        command =lambda :wczytaj_stan(nazwaokna)
+    )
+    guzik_zapisz.place(x=120, y=100)
+    guzik_wczytaj.place(x=120, y=250)
+    zapisztext.place(x=50, y=50)
+    wczytajtext.place(x=50, y=200)
+def guzik_zapis_i_wczytaj():
+    okno_zapis_i_wczytaj = Toplevel(root)
+    okno_zapis_i_wczytaj.geometry("400x350+550+300")
+    okno_zapis_i_wczytaj.resizable(False,False)
+    okno_zapis_i_wczytaj.title("Sigma Clicker - Zapis i Wczytaj")
+    okno_zapis_i_wczytaj.iconbitmap(r"assets\save&load.ico")
+    zapis_i_wczytaj_interface(okno_zapis_i_wczytaj)
+    #WAZNE - funkcje zapisu i wczytywania nie sa jeszcze zaimplementowane
 #label odpowiedzialny za wyswietlanie ilosci klikniec
 liczbaKlikniec = tk.Label(
     root,
@@ -192,10 +269,18 @@ guzikSklep = tk.Button(
     image = IkonaSklep,
     command=guzik_sklep
 )
+guzikZapisIWczytaj = tk.Button(
+    root,
+    image = IkonaZapisIWczytaj,
+    command = guzik_zapis_i_wczytaj
+)
 #autoclicker
 #komendy do ulozenia danych rzeczy (place, mainloop itd)
+#guzki sklepu
 guzik.place(x = 50, y = 300)
-guzikSklep.place(x = 730, y = 20)
+guzikSklep.place(x = 750, y = 20)
+#guziki zapisu stanu gry
+guzikZapisIWczytaj.place(x = 680, y = 20)
 liczbaKlikniec.place(x=395, y=150, anchor = tk.CENTER)
 if ile_razy_kupiono_autoclicker > 0:
     ile_na_sekunde_autoclicker.place(x=395, y=220, anchor = tk.CENTER)
